@@ -1,15 +1,21 @@
 package com.test.mytimer
 
 import android.app.PendingIntent
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.view.View
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.test.mytimer.databinding.ActivityMainBinding
 import com.test.mytimer.service.TimerNotification
+import com.test.mytimer.utils.BROADCAST_ACTION_TIMER
+import com.test.mytimer.utils.BROADCAST_TIMER_SECONDS_REMAINING
 
 class MainActivity : AppCompatActivity() {
 
@@ -21,6 +27,22 @@ class MainActivity : AppCompatActivity() {
 
     lateinit var notiTimer: TimerNotification.Builder
 
+    val timerBroadCastReciver : BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            when(intent?.action) {
+                BROADCAST_ACTION_TIMER -> {
+                    if(intent.hasExtra(BROADCAST_TIMER_SECONDS_REMAINING)){
+                        //handleTimer
+                            val timer = intent.getStringExtra(BROADCAST_TIMER_SECONDS_REMAINING)
+                        activityMainBinding.timerCountdownLayout.countdownTv.text = timer
+                        setTimerView()
+                    }
+                }
+            }
+        }
+
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         activityMainBinding = ActivityMainBinding.inflate(layoutInflater)
@@ -30,6 +52,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun init() {
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+            timerBroadCastReciver,
+            IntentFilter(BROADCAST_ACTION_TIMER)
+        )
 
         setClickListeners()
 
@@ -65,7 +92,7 @@ class MainActivity : AppCompatActivity() {
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setContentIntent(getPendingIntent())
             .setOnTickListener {
-                activityMainBinding.timerCountdownLayout.countdownTv.text = it.toString()
+                //activityMainBinding.timerCountdownLayout.countdownTv.text = it.toString()
             }
             .setOnFinishListener {
                 Toast.makeText(this, "timer finished", Toast.LENGTH_SHORT).show()
@@ -106,12 +133,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun setTextTimer() {
-        val m = (timer / 1000) / 60
-        val s = (timer / 1000) % 60
+        val minutesUntilFinished = (timer / 1000 - 1) / 60
+        val secondsInMinuteUntilFinished = ((timer / 1000 - 1) - minutesUntilFinished * 60)
+        val secondsStr = secondsInMinuteUntilFinished.toString()
+        val showTime =
+            "$minutesUntilFinished : ${if (secondsStr.length == 2) secondsStr else "0$secondsStr"}"
 
-        val format = String.format("%02d:%02d", m, s)
 
-        activityMainBinding.timerCountdownLayout.countdownTv.text = format
+        activityMainBinding.timerCountdownLayout.countdownTv.text = showTime
     }
 
     private fun getPendingIntent(): PendingIntent {

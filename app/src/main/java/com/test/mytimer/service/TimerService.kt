@@ -4,6 +4,9 @@ import android.app.Service
 import android.content.Intent
 import android.os.CountDownTimer
 import android.os.IBinder
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.test.mytimer.utils.BROADCAST_ACTION_TIMER
+import com.test.mytimer.utils.BROADCAST_TIMER_SECONDS_REMAINING
 
 enum class TimerState { RUNNING, TERMINATED }
 
@@ -39,12 +42,12 @@ class TimerService : Service() {
     override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
 
-        if (::timer.isInitialized) {
-            timer.cancel()
-            state = TimerState.TERMINATED
-        }
-        TimerNotification.removeNotification()
-        stopSelf()
+//        if (::timer.isInitialized) {
+//            timer.cancel()
+//            state = TimerState.TERMINATED
+//        }
+//        TimerNotification.removeNotification()
+//        stopSelf()
     }
 
     private fun playTimer(setTime: Long) {
@@ -62,6 +65,7 @@ class TimerService : Service() {
                 val showTime =
                     "$minutesUntilFinished : ${if (secondsStr.length == 2) secondsStr else "0$secondsStr"}"
                 TimerNotification.removeNotification()
+                sendBroadcast(showTime)
             }
 
             override fun onTick(millisUntilFinished: Long) {
@@ -74,6 +78,14 @@ class TimerService : Service() {
         state = TimerState.RUNNING
     }
 
+
+    private fun sendBroadcast(secondsRemaining:String) {
+        val intent = Intent().apply {
+            action = BROADCAST_ACTION_TIMER
+            putExtra(BROADCAST_TIMER_SECONDS_REMAINING,secondsRemaining)
+        }
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+    }
 
     private fun terminateTimer() {
         if (::timer.isInitialized) {
@@ -92,6 +104,7 @@ class TimerService : Service() {
             "$minutesUntilFinished : ${if (secondsStr.length == 2) secondsStr else "0$secondsStr"}"
         //Update Notification
         TimerNotification.updateTimeLeft(this, showTime)
+        sendBroadcast(showTime)
     }
 
 }

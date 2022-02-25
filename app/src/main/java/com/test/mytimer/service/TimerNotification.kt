@@ -39,8 +39,6 @@ object TimerNotification : Timer {
 
     private lateinit var channelId: String
     private lateinit var notificationManager: NotificationManagerCompat
-    private lateinit var pausePendingIntent: PendingIntent
-    private lateinit var stopPendingIntent: PendingIntent
 
     private var setStartTime by Delegates.notNull<Long>()
 
@@ -76,14 +74,6 @@ object TimerNotification : Timer {
                 ).apply { setShowBadge(false) }
             notificationManager.createNotificationChannel(channel)
         }
-
-        val pauseIntent = Intent(context, TimerService::class.java).apply { action = "PAUSE" }
-        val stopIntent = Intent(context, TimerService::class.java).apply { action = "STOP" }
-
-        pausePendingIntent =
-            PendingIntent.getService(context, 29, pauseIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-        stopPendingIntent =
-            PendingIntent.getService(context, 29, stopIntent, PendingIntent.FLAG_UPDATE_CURRENT)
 
         this.setStartTime = setTime
 
