@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">MyTimer</string>
+    <string name="start">Start</string>
+    <string name="exit">Exit</string>
 </resources>
