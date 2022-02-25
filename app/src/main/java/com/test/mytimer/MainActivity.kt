@@ -79,7 +79,12 @@ class MainActivity : AppCompatActivity() {
     private fun setTimerInputView() {
         activityMainBinding.timerCountdownLayout.timerCountdownRootCl.visibility = View.GONE
         activityMainBinding.timerInputLayout.timerInputRootCl.visibility = View.VISIBLE
-        activityMainBinding.timerInputLayout.timerInputEtv.setText(timer.toString())
+        val minutesUntilFinished = (timer / 1000 - 1) / 60
+        val secondsInMinuteUntilFinished = ((timer / 1000 - 1) - minutesUntilFinished * 60)
+        val secondsStr = secondsInMinuteUntilFinished.toString()
+        val showTime =
+            "$minutesUntilFinished : ${if (secondsStr.length == 2) secondsStr else "0$secondsStr"}"
+        activityMainBinding.timerInputLayout.timerInputEtv.setText(showTime)
     }
 
     private fun startTimerService() {
