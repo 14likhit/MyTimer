@@ -34,6 +34,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun setClickListeners() {
         activityMainBinding.timerInputLayout.startBtn.setOnClickListener {
+            //Todo-> Uncomment Once Service Logic Done.
+//            timer = activityMainBinding.timerInputLayout.timerInputEtv.text.toString().toLong()
             startTimer()
             setTimerView()
         }
